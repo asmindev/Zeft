@@ -39,7 +39,7 @@ def user(user):
 
     """
     if 'php?rand=' in str(user):
-        raise ValueError('User not found')
+        raise ValueError('User not found ')
     return {
             'name' :re.findall('<title>(.*?)</title>',str(user))[0],
             'id'   :re.findall('owner_id=(\d*)',str(user))[0]
