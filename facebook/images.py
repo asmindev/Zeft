@@ -27,7 +27,7 @@ def fullsize(ses, args):
     for photos in args:
         data = Urlfind(
             Parser(ses.get(Urlfind(Parser(ses.get(photos).content), "full")).content),
-            "fupg2",
+            "fupg",
         )
         if len(data) != 0:
             arg.append(data)

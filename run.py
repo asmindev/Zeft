@@ -52,7 +52,7 @@ MENU = [
     "Messages",
     "Friendship",
     "Image Downloader",
-    "Find ID or Username"
+    "Find user"
     ]
 
 TITLE = ["Menu utama","Login"]
@@ -470,7 +470,7 @@ def Menu():
                         "wb",
                     ) as f:
                         f.write(facebook.action.download(x))
-    if cursor == "7":
+    elif cursor == "7":
         nama = facebook.Finduser(ses, getinput("Enter full name"))
         print()
         for user in nama:
@@ -481,6 +481,8 @@ def Menu():
                 print(f" {r}[{C}*{r}] {user['username']} ")
             print("-" * 30)
         back("Done", Menu)
+    elif cursor == "0":
+        Ahead()
 
 def Ahead():
     global DATA_USER
@@ -488,10 +490,24 @@ def Ahead():
     banner()
     choice = select(Sort(TITLE,back=False),menu=False)
     if choice == "1":
-        if not akun.logged:
+        try:
+            listuser = eval(open('lib/users.log').read())
+            if len(listuser) != 1:
+                count = 0 
+                for user in listuser:
+                    count += 1 
+                    print(f'  {C + str(count) + r}) {user["name"]}')
+                ses.setkuki = listuser[int(select(len(listuser))) - 1]["cookie"]
+            else:
+                ses.setkuki = listuser[0]["cookie"]
+            DATA_USER = akun.login(ses)
+            if DATA_USER:
+                Menu()
+            else:
+                addses.remove(ses.showkuki["cookie"])
+                back('Cookie invalid!', Ahead)
+        except IOError:
             back("You must login",Ahead)
-        else:
-            Menu()
     elif choice == "2":
         for i in range(3):
             ses.setkuki = getinput("Put your cookie")
