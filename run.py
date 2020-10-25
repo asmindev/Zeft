@@ -1,49 +1,52 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Coded by zettamus
+# Coded by ['Asmin','Zett']
 # Github : zettamus
 # Facebook : fb .me/zettid.1
 # Telegram : t.me/zettamus
 # if you want to recode please dont change name author
 # +---------------------------------+
 
-R = "\033[31;m"
-C = "\033[36;m"
-G = "\033[35;m"
-B = "\033[94;m"
-r = "\033[0;m"
 import os
-import random
 import time
-from concurrent.futures import ThreadPoolExecutor
+import random
+import facebook
+from lib import addses
 from getpass import getpass
 from threading import Thread
-
-import cursor
-from colorama import Back, Fore, init
-
-import facebook
 from facebook.request import Browser
-from lib import addses
+from colorama import Back, Fore, init
+from concurrent.futures import ThreadPoolExecutor
+
 
 akun = facebook.Account()
 init(True)
 
-
 # var global
 STATUS = None
-DATA_USER = None
 penentu = False
+DATA_USER = None
 process_count = 0
 ses = Browser()
 
 
-SUB = [{"react": ["Group", "Timeline", "Friend Timeline"]},
-        {"group": ["Post", "Leave"]},
-        {"comment": ["Group", "Timeline", "Friend Timeline"]},
-        {"messages": ["Spam user","Spam group","Online user","Delete chat","Delete empty chat","Broadcast messages",]},
-        {"friend": ["Unfriend", "Delete requests", "Confirm requests", "Cancel Requests"]},
-        {"image": ["Album", "From Inbox", "Friend Album"]}]
+SUB = [
+    {"react": ["Group", "Timeline", "Friend Timeline"]},
+    {"group": ["Post", "Leave"]},
+    {"comment": ["Group", "Timeline", "Friend Timeline"]},
+    {
+        "messages": [
+            "Spam user",
+            "Spam group",
+            "Online user",
+            "Delete chat",
+            "Delete empty chat",
+            "Broadcast messages",
+        ]
+    },
+    {"friend": ["Unfriend", "Delete requests", "Confirm requests", "Cancel Requests"]},
+    {"image": ["Album", "From Inbox", "Friend Album"]},
+]
 
 MENU = [
     "React",
@@ -52,10 +55,11 @@ MENU = [
     "Messages",
     "Friendship",
     "Image Downloader",
-    "Find user"
-    ]
+    "Find user",
+]
 
-TITLE = ["Menu utama","Login"]
+TITLE = ["Menu utama", "Login"]
+
 
 def banner(logo=False):
     print(
@@ -65,26 +69,44 @@ def banner(logo=False):
   {Fore.LIGHTBLUE_EX}╚═╝{Fore.RESET}└─ └   ┴ v.0.3 """
     )
     if logo:
-        print(f" {Back.BLUE+Fore.WHITE}   Coded by " + random.choice(["asmin", "zett"]).title() + "   ")
+        print(
+            f" {Back.WHITE+Fore.BLACK}   Coded by "
+            + random.choice(["asmin", "zett"]).title()
+            + "   "
+        )
         print()
-        show("Name : " + DATA_USER["name"] + " ("+ DATA_USER["username"] + ")" if DATA_USER["username"] is not None else "") 
+        show(
+            "Name : " + DATA_USER["name"] + " (" + DATA_USER["username"] + ")"
+            if DATA_USER["username"] is not None
+            else "Name : " + DATA_USER["name"]
+        )
         show("UID  : " + DATA_USER["id"])
-# asmin kuki
         print()
     else:
-        print(f" {Back.BLUE+Fore.WHITE}   Coded by " + random.choice(["asmin", "zett"]).title() + "   ")
+        print(
+            f" {Back.WHITE+Fore.BLACK}   Coded by "
+            + random.choice(["asmin", "zett"]).title()
+            + "   "
+        )
         print()
+
 
 def show(info):
     print(f" {r}[{C}*{r}] {info}")
+
+
 def back(info, function=None):
     getpass(f" {r}[{R}!{r}] {info}. Back..!")
     function() if function is not None else ""
 
+
 def process(total):
     global process_count
     process_count += 1
-    print(f"\r [!] {str(process_count)}/{str(len(total))} Process ", end="")
+    print(
+        f"{Fore.RESET}[{Fore.LIGHTGREEN_EX}!{Fore.RESET}] {str(process_count)}/{str(len(total))} Process ",
+        end="\r ",
+    )
     if process_count == total:
         process_count = 0
 
@@ -110,7 +132,7 @@ def select(maxchoice, menu=True):
         back("Max input", Menu if menu else Ahead)
 
 
-def Sort(current,back=True):
+def Sort(current, back=True):
     count = 0
     for menu in current:
         count += 1
@@ -123,29 +145,32 @@ def Sort(current,back=True):
 
 
 def getinput(string):
-    return input(f"{r} [{C}?{r}] {r}{string} :{C} ")
+    while True:
+        text = input(f"{r} [{C}?{r}] {r}{string} :{C} ")
+        if text != "":
+            return text
 
 
 def progress():
     global penentu, STATUS
     count = 0
-    cursor.hide()
     while True:
         count += 1
         char = ""
         for _ in range(4):
             if STATUS is not None:
-                print(end="\r %s[%s%s%s] Please wait%s   " % (r, C, STATUS, r, char))
+                print(
+                    "%s[%s%s%s] Please wait%s   " % (r, C, STATUS, r, char), end="\r "
+                )
                 time.sleep(0.4)
             else:
-                print(end="\r %s[%s!%s] Please wait%s   " % (r, C, r, char))
+                print("%s[%s!%s] Please wait%s   " % (r, C, r, char), end="\r ")
                 time.sleep(0.4)
             char += "."
         count = 0
         if penentu:
             STATUS = None
             penentu = False
-            cursor.show()
             break
 
 
@@ -186,7 +211,7 @@ def Menu():
             current = facebook.Showgroup(ses)
             for grub in current:
                 count += 1
-                print(f' {C+str(count)+r}). {grub["name"]}')
+                print(f'   {C+str(count)+r}). {grub["name"]}')
             choice = current[int(select(len(current))) - 1]["url"]
             react_type = list_react()
             amount = int(getinput("amount (Ex:20)"))
@@ -229,7 +254,7 @@ def Menu():
             current = facebook.Showgroup(ses)
             for grub in current:
                 count += 1
-                print(f' {C+str(count)+r}). {grub["name"]}')
+                print(f'   {C+str(count)+r}). {grub["name"]}')
             choice = current[int(select(len(current))) - 1]["url"]
             text = getinput("text")
             action, form = facebook.group.post_group(ses, choice, text)
@@ -239,7 +264,7 @@ def Menu():
             current = facebook.Showgroup(ses)
             for grub in current:
                 count += 1
-                print(f' {C+str(count)+r}). {grub["name"]}')
+                print(f'   {C+str(count)+r}). {grub["name"]}')
             choice = current[int(select(len(current))) - 1]["url"]
             action, form = facebook.group.leave_group(ses, choice)
             ses.post(action, form)
@@ -249,10 +274,11 @@ def Menu():
         comment = facebook.Comment(ses)
         cursor = select(Sort(SUB[2]["comment"]))
         if cursor == "1":
-            amount = getinput("amount (Ex:20)")
-            value = getinput("comment text")
+            user = getinput("Username/ID")
+            amount = getinput("Amount (Ex:20)")
+            value = getinput("Comment text")
             Th.start()
-            data = comment.in_home(amount, value)
+            data = comment.in_people(user, amount, value)
             penentu = True
             print()
             for x in data:
@@ -261,11 +287,10 @@ def Menu():
                 process(data)
                 ses.post(action, x)
         elif cursor == "2":
-            user = getinput("Username/ID")
-            amount = getinput("Amount (Ex:20)")
             value = getinput("Comment text")
+            amount = getinput("Amount (Ex:20)")
             Th.start()
-            data = comment.in_people(user, amount)
+            data = comment.in_home(amount, value)
             penentu = True
             for x in data:
                 action = x["action"]
@@ -277,10 +302,10 @@ def Menu():
             current = facebook.Showgroup(ses)
             for grub in current:
                 count += 1
-                print(f' {C+str(count)+r}). {grub["name"]}')
+                print(f'   {C+str(count)+r}). {grub["name"]}')
             choice = current[int(select(len(current))) - 1]["url"]
             value = getinput("Comment")
-            amount = int(getinput("amount (Ex:20)"))
+            amount = int(getinput("Amount (Ex:20)"))
             Th.start()
             data = comment.in_group(choice, amount, value)
             penentu = True
@@ -297,7 +322,9 @@ def Menu():
         cursor = select(Sort(SUB[3]["messages"]))
         if cursor == "1":
             id = getinput("Username/ID")
-            id = facebook.user(ses.get("profile.php?id=" + id if id.isdigit() else id).content)["id"]
+            id = facebook.user(
+                ses.get("profile.php?id=" + id if id.isdigit() else id).content
+            )["id"]
             message = getinput("Messages")
             amount = getinput("Amount")
             Th.start()
@@ -313,7 +340,7 @@ def Menu():
         elif cursor == "3":
             data = messages.getusersonline(ses)
             if len(data) == 0:
-                print("no friend online")
+                back("No friend online", Menu)
             else:
                 msg = getinput("Messages")
                 for user in data:
@@ -338,7 +365,7 @@ def Menu():
                     if res.result() is not None:
                         rv.append(res.result())
             if len(rv) == 0:
-                exit("you not have empty chat")
+                back("You not have empty chat", Menu)
             penentu = True
             print("")
             ask = getinput("Showlogs (Y/n)").lower()
@@ -349,6 +376,10 @@ def Menu():
                     process(rv)
                 messages.delete_msg(ses, x["url"])
         elif cursor == "6":
+            try:
+                os.mkdir("broadcast")
+            except:
+                pass
             list_ = os.listdir("./broadcast")
             count = len(list_)
             if len(list_) == 0:
@@ -374,18 +405,26 @@ def Menu():
                     if name == "":
                         count += 1
                         name = f"broadcast-{count}"
-                        broadcast(name)
+                    broadcast(name)
+                    back("Done", Menu)
                 else:
                     try:
-                        files = (open("broadcast/" + list_[int(cursor) - 1]).read().splitlines())
-                    except:
+                        files = (
+                            open("broadcast/" + list_[int(cursor) - 1])
+                            .read()
+                            .splitlines()
+                        )
+                    except Exception:
                         back(f'"{cursor}" out of index', Menu)
                     message = getinput("Messages")
                     count = 0
+                    print()
                     for user in files:
                         count += 1
-                        print(" %s[%s%s%s] %s" % (r, C, count, r, user))
-                        messages.people(ses, facebook.user(ses.get(user).content)["id"], message)
+                        print("   %s%s%s). %s" % (C, count, r, user))
+                        messages.people(
+                            ses, facebook.user(ses.get(user).content)["id"], message
+                        )
                     back("Done", Menu)
     elif cursor == "5":
         cursor = select(Sort(SUB[4]["friend"]))
@@ -416,7 +455,7 @@ def Menu():
             count = 0
             for nama in data:
                 count += 1
-                print(f' {C+str(count)+r}). {nama["text"]}')
+                print(f'   {C+str(count)+r}). {nama["text"]}')
             cursor = data[int(select(len(data))) - 1]["url"]
             data = facebook.images.album(ses, cursor)
             count = 0
@@ -424,7 +463,9 @@ def Menu():
                 for x in data:
                     process(data)
                     count += 1
-                    with open("Photos/" + time.strftime("%Y%M%S") + str(count) + ".jpg", "wb") as f:
+                    with open(
+                        "Photos/" + time.strftime("%Y%M%S") + str(count) + ".jpg", "wb"
+                    ) as f:
                         f.write(facebook.action.download(x))
         elif cursor == "2":
             user = getinput("Username/ID")
@@ -452,7 +493,7 @@ def Menu():
             count = 0
             for nama in data:
                 count += 1
-                print(f' {C+str(count)+r}). {nama["text"]}')
+                print(f'   {C+str(count)+r}). {nama["text"]}')
             cursor = data[int(select(len(data))) - 1]["url"]
             data = facebook.images.album(ses, cursor)
             count = 0
@@ -484,42 +525,66 @@ def Menu():
     elif cursor == "0":
         Ahead()
 
+
 def Ahead():
     global DATA_USER
     os.system("clear")
     banner()
-    choice = select(Sort(TITLE,back=False),menu=False)
+    choice = select(Sort(TITLE, back=False), menu=False)
     if choice == "1":
+        print(f'  You have session "{DATA_USER["name"]}"\n' if akun.logged else "")
         try:
-            listuser = eval(open('lib/users.log').read())
+            listuser = open("lib/users.log").read()
+            if listuser == '':
+                os.remove('lib/users.log')
+                exit(' Run again')
+            listuser = eval(listuser)
             if len(listuser) != 1:
-                count = 0 
+                count = 0
                 for user in listuser:
-                    count += 1 
+                    count += 1
                     print(f'  {C + str(count) + r}) {user["name"]}')
-                ses.setkuki = listuser[int(select(len(listuser))) - 1]["cookie"]
+                kuki = listuser[int(select(len(listuser), menu=False)) - 1]["cookie"]
             else:
-                ses.setkuki = listuser[0]["cookie"]
+                kuki = listuser[0]["cookie"]
+            ses.setkuki = kuki
             DATA_USER = akun.login(ses)
             if DATA_USER:
                 Menu()
             else:
                 addses.remove(ses.showkuki["cookie"])
-                back('Cookie invalid!', Ahead)
-        except IOError:
-            back("You must login",Ahead)
+                back("Cookie invalid!", Ahead)
+        except FileNotFoundError:
+            back("File cookies not found", Ahead)
     elif choice == "2":
         for i in range(3):
-            ses.setkuki = getinput("Put your cookie")
-            DATA_USER = akun.login(ses)
-            if DATA_USER:
-                addses.addsess(DATA_USER["name"], DATA_USER["username"], DATA_USER["id"],ses.showkuki["cookie"])
-                Menu()
+            cookies = getinput("Put your cookie")
+            if "datr" in cookies and "c_user" in cookies:
+                ses.setkuki = cookies
+                DATA_USER = akun.login(ses)
+                if DATA_USER:
+                    addses.addsess(
+                        DATA_USER["name"],
+                        str(DATA_USER["username"]),
+                        DATA_USER["id"],
+                        ses.showkuki["cookie"],
+                    )
+                    Menu()
+                    break
             show("Cookie wrong")
-        back("Please check your cookie before try again",Ahead)
+        back("Please check your cookie before try again", Ahead) if i == 0 else Ahead()
 
 
-try:
+if "__main__" == __name__:
+    R = "\033[31;m"
+    C = "\033[36;m"
+    G = "\033[35;m"
+    B = "\033[94;m"
+    r = "\033[0;m"
+    try:
+        os.mkdir("Photos")
+    except Exception:
+        pass
     Ahead()
-except IOError:
-    cursor.show()
+else:
+    exit("Please running as file, not import")

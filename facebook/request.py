@@ -15,7 +15,7 @@ class Browser:
 
     @property
     def cookies(self):
-        pass
+        return 'Cookies initialized'
 
     @cookies.setter
     def setkuki(self, kuki):
@@ -27,18 +27,18 @@ class Browser:
 
     def get(self, url):
         try:
-            if self.__cookies["cookie"] == None:
+            if self.__cookies["cookie"] is None:
                 raise ValueError("Please set your cookie!")
-            return self.__req(self.__host + check(url), cookies=self.__cookies)
+            return self.__req(self.__host + check(url), headers=self.__cookies)
         except requests.exceptions.ConnectionError as f:
             raise ConnectionError(str(f))
 
     def post(self, url, data):
         try:
-            if self.__cookies["cookie"] == None:
+            if self.__cookies["cookie"] is None:
                 raise ValueError("Please set your cookie!")
             return self.__post(
-                self.__host + check(url), data=data, cookies=self.__cookies
+                self.__host + check(url), data=data, headers=self.__cookies
             )
         except requests.exceptions.ConnectionError as f:
             raise ConnectionError(str(f))

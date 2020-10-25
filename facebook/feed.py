@@ -19,12 +19,12 @@ class Comment(Core):
     def __init__(self, ses):
         super().__init__(ses, '#footer_action_list')
     def in_home(self, amount, comment_text):
-        return self.__init(self.home(amount), comment_text)
+        return self.main(self.home(amount), comment_text)
     def in_people(self, user, amount, comment_text):
-        return self.__init(self.people(user,amount), comment_text)
+        return self.main(self.people(user,amount), comment_text)
     def in_group(self, idgroup, amount, comment_text):
-        return self.__init(self.group(idgroup, amount), comment_text)
-    def __init(self, data, comment_text):
+        return self.main(self.group(idgroup, amount), comment_text)
+    def main(self, data, comment_text):
         rv = []
         for link in data:
             data = form(self._ses.get(link).content, 'comment.php')
@@ -53,12 +53,12 @@ class React(Core):
         self.react = {'like':'1','super':'3','care':'16','haha':'4','wow':'3','sad':'7','angry':'8'}
         super().__init__(ses, 'reactions/picker')
     def in_home(self, type,amount):
-        return self.__init(self.home(amount), type)
+        return self.main(self.home(amount), type)
     def in_people(self, type, user, amount):
-        return self.__init(self.people(user,amount), type)
+        return self.main(self.people(user,amount), type)
     def in_group(self, type, idgroup, amount):
-        return self.__init(self.group(idgroup, amount), type)
-    def __init(self, data, type):
+        return self.main(self.group(idgroup, amount), type)
+    def main(self, data, type):
         rv = []
         if len(data) == 0:
             raise ValueError("Cant dump data")

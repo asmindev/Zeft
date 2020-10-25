@@ -27,19 +27,19 @@ class Account:
         self.__profile_pic = None
         self.__login = False
 
-    def __GetMyInfo(self, data=None):
+    def getMyInfo(self, ses, data=None):
         if "mbasic_logout_button" in str(data):
-            self.__username = parsing.Urlfind(data, "friends?lst").split("/")[1]
-            photos = data.find_all("img")
+            try:
+                self.__username = parsing.Urlfind(data, "friends?lst").split("/")[1]
+            except:
+                self.__username = None
+            # Disabled
+            #self.__profile_pic = parsing.Urlfind(Parser(ses.get(parsing.Urlfind(Parser(ses.get(parsing.Urlfind(data, "photo.php?fbid")).content), 'full_size')).content),'fupg')
             self.__name = data.find("title").text
             try:
                 self.__id = re.findall("/(\d*)/allactivity", str(data))[0]
             except:
                 pass
-            for profile in photos:
-                if "profile picture" in str(profile):
-                    self.__profile_pic = profile["src"]
-                    break
         return {
             "name": self.__name,
             "id": self.__id,
@@ -52,7 +52,7 @@ class Account:
         return self.__login
 
     def login(self, ses):
-        data = ses.get("me").content
-        self.__login = (self.__GetMyInfo(Parser(data))if "mbasic_logout_button" in str(data) else False)
+        data = ses.get("profile.php").content
+        self.__login = (self.getMyInfo(ses, Parser(data)) if "mbasic_logout_button" in str(data) else False)
 
         return self.__login
