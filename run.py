@@ -44,7 +44,8 @@ SUB = [
             "Broadcast messages",
         ]
     },
-    {"friend": ["Unfriend", "Delete requests", "Confirm requests", "Cancel Requests"]},
+    {"friend": ["Unfriend", "Delete requests",
+                "Confirm requests", "Cancel Requests"]},
     {"image": ["Album", "From Inbox", "Friend Album"]},
 ]
 
@@ -58,7 +59,7 @@ MENU = [
     "Find user",
 ]
 
-TITLE = ["Menu utama", "Login"]
+TITLE = ["Main menu", "Login"]
 
 
 def banner(logo=False):
@@ -164,17 +165,19 @@ def progress():
                 )
                 time.sleep(0.4)
             else:
-                print("%s[%s!%s] Please wait%s   " % (r, C, r, char), end="\r ")
+                print("%s[%s!%s] Please wait%s   " %
+                      (r, C, r, char), end="\r ")
                 time.sleep(0.4)
             char += "."
         count = 0
         if penentu:
             STATUS = None
             penentu = False
-            break
+            return
 
 
 def list_react():
+    print()
     REACTIONS = ["haha", "wow", "sad", "care", "super", "like", "angry"]
     return REACTIONS[int(select(Sort(REACTIONS))) - 1]
 
@@ -197,10 +200,11 @@ def broadcast(name):
 
 
 def Menu():
+    global penentu, process_count, STATUS
+    process_count = 0
     Th = Thread(target=progress)
     Th.daemon = True
     os.system("clear")
-    global penentu, STATUS
     banner(True)
     cursor = select(Sort(MENU))
     if cursor == "1":
@@ -218,33 +222,37 @@ def Menu():
             Th.start()
             data = react.in_group(react_type, choice, amount)
             penentu = True
-            print()
+            print("\n")
             for x in data:
-                ses.get(x)
                 process(data)
+                ses.get(x)
+            back("Done", Menu)
         elif cursor == "2":
             react_type = list_react()
             amount = int(getinput("amount (Ex:20)"))
             Th.start()
             data = react.in_home(react_type, amount)
             penentu = True
-            print()
+            print("\n")
             for x in data:
-                ses.get(x)
                 process(data)
-            Menu()
+                ses.get(x)
+            print("\n")
+            back("Done", Menu)
         elif cursor == "3":
             val = facebook.user(ses.get(getinput("username")).content)
+            show("Target: " + val["name"])
             react_type = list_react()
             amount = int(getinput("amount (Ex:20)"))
             Th.start()
             data = react.in_people(react_type, val["id"], amount)
             penentu = True
-            print("\r")
+            print("\n")
             for x in data:
-                ses.get(x)
                 process(data)
-            Menu()
+                ses.get(x)
+            print("\n")
+            back("Done", Menu)
         elif cursor == "0":
             Menu()
     elif cursor == "2":
@@ -259,15 +267,27 @@ def Menu():
             text = getinput("text")
             action, form = facebook.group.post_group(ses, choice, text)
             ses.post(action, form)
+            back("Done", Menu)
         elif cursor == "2":
             count = 0
             current = facebook.Showgroup(ses)
             for grub in current:
                 count += 1
                 print(f'   {C+str(count)+r}). {grub["name"]}')
-            choice = current[int(select(len(current))) - 1]["url"]
-            action, form = facebook.group.leave_group(ses, choice)
-            ses.post(action, form)
+            show("use comma (,) as separator")
+            choice = set([int(choice)
+                          for choice in input(f"{B} >>> {r}").split(",")])
+            for out in choice:
+                try:
+                    print('     :Leave from: %s...' % current[out - 1]["name"], end='')
+                    choice = current[out - 1]["url"]
+                    action, form = facebook.group.leave_group(ses, choice)
+                    ses.post(action, form)
+                    print(' done')
+                except IndexError:
+                    show('"%s" out of list ' % out)
+                    continue
+            back("Done", Menu)
         elif cursor == "0":
             Menu()
     elif cursor == "3":
@@ -280,23 +300,28 @@ def Menu():
             Th.start()
             data = comment.in_people(user, amount, value)
             penentu = True
-            print()
+            print("\n")
             for x in data:
                 action = x["action"]
                 del x["action"]
                 process(data)
                 ses.post(action, x)
+            print("\n")
+            back("Done", Menu)
         elif cursor == "2":
             value = getinput("Comment text")
             amount = getinput("Amount (Ex:20)")
             Th.start()
             data = comment.in_home(amount, value)
             penentu = True
+            print("\n")
             for x in data:
                 action = x["action"]
                 del x["action"]
                 process(data)
                 ses.post(action, x)
+            print("\n")
+            back("Done", Menu)
         elif cursor == "3":
             count = 0
             current = facebook.Showgroup(ses)
@@ -309,12 +334,14 @@ def Menu():
             Th.start()
             data = comment.in_group(choice, amount, value)
             penentu = True
-            print()
+            print("\n")
             for x in data:
                 action = x["action"]
                 del x["action"]
-                process(data)
                 ses.post(action, x)
+                process(data)
+            print("\n")
+            back("Done", Menu)
         elif cursor == "0":
             Menu()
     elif cursor == "4":
@@ -324,19 +351,22 @@ def Menu():
             id = getinput("Username/ID")
             id = facebook.user(
                 ses.get("profile.php?id=" + id if id.isdigit() else id).content
-            )["id"]
+            )
+            show("Target: " + id["name"])
             message = getinput("Messages")
             amount = getinput("Amount")
             Th.start()
             STATUS = "Sending"
-            messages.people(ses, id, message, int(amount))
+            messages.people(ses, id["id"], message, int(amount))
             STATUS = "Complete"
             penentu = True
+            back("Done", Menu)
         elif cursor == "2":
             id = getinput("ID Group")
             message = getinput("Messages")
             amount = getinput("Amount")
             messages.group(ses, id, message, int(amount))
+            back("Done", Menu)
         elif cursor == "3":
             data = messages.getusersonline(ses)
             if len(data) == 0:
@@ -345,14 +375,17 @@ def Menu():
                 msg = getinput("Messages")
                 for user in data:
                     messages.people(ses, user, msg)
+            back("Done", Menu)
         elif cursor == "4":
             Th.start()
             STATUS = "Get Messages"
             data = messages.getmsg(ses)
             penentu = True
+            print("\n")
             with ThreadPoolExecutor(10) as ex:
                 for url in data:
                     ex.submit(messages.delete_msg, (ses, url["url"]))
+            back("Done", Menu)
         elif cursor == "5":
             Th.start()
             STATUS = "Get Messages"
@@ -371,10 +404,11 @@ def Menu():
             ask = getinput("Showlogs (Y/n)").lower()
             for x in rv:
                 if ask == "y":
-                    print(f' {r}[{C}!{r}] {x["text"]} ')
+                    print(f'  {x["text"]} ')
                 else:
                     process(rv)
                 messages.delete_msg(ses, x["url"])
+            back("Done", Menu)
         elif cursor == "6":
             try:
                 os.mkdir("broadcast")
@@ -384,7 +418,8 @@ def Menu():
             count = len(list_)
             if len(list_) == 0:
                 print(f" {r}[{R}!{r}] You not have list broadcast")
-                ask = getinput("Do you want to make list broadcast (Y/n)").lower()
+                ask = getinput(
+                    "Do you want to make list broadcast (Y/n)").lower()
                 if ask == "y":
                     name = getinput("Broadcast name")
                     if name == "":
@@ -423,7 +458,8 @@ def Menu():
                         count += 1
                         print("   %s%s%s). %s" % (C, count, r, user))
                         messages.people(
-                            ses, facebook.user(ses.get(user).content)["id"], message
+                            ses, facebook.user(ses.get(user).content)[
+                                "id"], message
                         )
                     back("Done", Menu)
     elif cursor == "5":
@@ -448,6 +484,8 @@ def Menu():
             penentu = True
             print("")
             back(str(len(data)), Menu)
+        elif cursor == "0":
+            Menu()
     elif cursor == "6":
         cursor = select(Sort(SUB[5]["image"]))
         if cursor == "1":
@@ -464,9 +502,11 @@ def Menu():
                     process(data)
                     count += 1
                     with open(
-                        "Photos/" + time.strftime("%Y%M%S") + str(count) + ".jpg", "wb"
+                        "Photos/" +
+                            time.strftime("%Y%M%S") + str(count) + ".jpg", "wb"
                     ) as f:
                         f.write(facebook.action.download(x))
+            back("Done", Menu)
         elif cursor == "2":
             user = getinput("Username/ID")
             name = facebook.user(ses.get(user).content)["name"]
@@ -486,6 +526,8 @@ def Menu():
                         "wb",
                     ) as f:
                         f.write(facebook.action.download(x))
+            print("\n")
+            back("Done", Menu)
         elif cursor == "3":
             user = getinput("Username/ID")
             name = facebook.user(ses.get(user).content)["name"].split(" ")[0]
@@ -511,6 +553,10 @@ def Menu():
                         "wb",
                     ) as f:
                         f.write(facebook.action.download(x))
+            print("\n")
+            back("Done", Menu)
+        elif cursor == "0":
+            Menu()
     elif cursor == "7":
         nama = facebook.Finduser(ses, getinput("Enter full name"))
         print()
@@ -532,19 +578,21 @@ def Ahead():
     banner()
     choice = select(Sort(TITLE, back=False), menu=False)
     if choice == "1":
-        print(f'  You have session "{DATA_USER["name"]}"\n' if akun.logged else "")
+        print(
+            f'  You have session "{DATA_USER["name"]}"\n' if akun.logged else "")
         try:
             listuser = open("lib/users.log").read()
-            if listuser == '':
-                os.remove('lib/users.log')
-                exit(' Run again')
+            if listuser == "":
+                os.remove("lib/users.log")
+                exit(" Run again")
             listuser = eval(listuser)
             if len(listuser) != 1:
                 count = 0
                 for user in listuser:
                     count += 1
                     print(f'  {C + str(count) + r}) {user["name"]}')
-                kuki = listuser[int(select(len(listuser), menu=False)) - 1]["cookie"]
+                kuki = listuser[int(
+                    select(len(listuser), menu=False)) - 1]["cookie"]
             else:
                 kuki = listuser[0]["cookie"]
             ses.setkuki = kuki
@@ -569,10 +617,10 @@ def Ahead():
                         DATA_USER["id"],
                         ses.showkuki["cookie"],
                     )
-                    Menu()
-                    break
+                    return Menu()
             show("Cookie wrong")
-        back("Please check your cookie before try again", Ahead) if i == 0 else Ahead()
+        back("Please check your cookie before try again",
+             Ahead) if i == 0 else Ahead()
 
 
 if "__main__" == __name__:

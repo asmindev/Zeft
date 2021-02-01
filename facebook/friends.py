@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Author: asmin
-from .parsing import Urlfind, Parser, form
+from .parser_html import Parsing
 
 
 def confirm(ses):
@@ -17,29 +17,27 @@ def cancel(ses):
 
 
 def unfriend(ses):
-    return [
-        form(
-            ses.get(Urlfind(Parser(ses.get(user).content), "removefriend")).content,
-            "remove",
-        )
-        for user in getFl(ses, "me/friends", [])
-    ]
+    data = []
+    for user in getFl(ses, "me/friends", []):
+        friend = Parsing(ses.get(user).content).find_url("removefriend")
+        _data = Parsing(ses.get(friend).content).find_url("remove")
+        data.append(_data)
 
 
 def function(ses, url, type, args):
-    frx = Parser(ses.get(url).content)
-    raw = Urlfind(frx, type)
+    frx = Parsing(ses.get(url).content)
+    raw = frx.find_url(type)
     for user in raw:
         args.append(user)
-    if "ppk=" in str(frx):
-        function(ses, Urlfind(frx, "ppk="), type, args)
+    if "ppk=" in str(frx.to_bs4):
+        function(ses, frx.find_url("ppk="), type, args)
     return args
 
 
 def getFl(ses, url, args):
-    frx = Parser(ses.get(url).content)
-    for teman in Urlfind(frx, "?fref"):
+    frx = Parsing(ses.get(url).content)
+    for teman in frx.find_url("?fref"):
         args.append(teman.split("?")[0])
-    if "?unit" in str(frx):
-        getFl(ses, Urlfind(frx, "?unit"), args)
+    if "?unit" in str(frx.to_bs4):
+        getFl(ses, frx.find_url("?unit"), args)
     return args

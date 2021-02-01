@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# author: zettamus | asmin 
+# author: zettamus | asmin
 """
 :Parsing response to many function
 

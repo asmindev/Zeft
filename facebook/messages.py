@@ -2,59 +2,74 @@
 # -*- coding: utf-8 -*-
 # author: zettamus || asmin
 # github: asmin-dev?
-from .parsing import form, Parser, Urlfind 
-from concurrent.futures import ThreadPoolExecutor
+from .parser_html import Parsing
+
+
 class Messages:
     def __init__(self):
-        self.__group = 'messages/read?tid=cid.g.'
-        self.__people = 'messages/read?tid=cid.c.'
+        self.__group = "messages/read?tid=cid.g."
+        self.__people = "messages/read?tid=cid.c."
+
     def getForm(self, ses, type):
-        return form(ses.get(type).content, 'send')
+        return Parsing(ses.get(type).content).parsing_form("send")
+
     def people(self, ses, user, msg, amount=1):
         farm = self.getForm(ses, self.__people + user)
-        farm["ids["+user+"]"] = user
+        farm["ids[" + user + "]"] = user
         farm["body"] = msg
         url = farm["action"]
         del farm["action"]
         for x in range(amount):
             ses.post(url, farm)
+
     def group(self, ses, user, msg, amount):
         farm = self.getForm(ses, self.__group + user)
         farm["body"] = msg
         url = farm["action"]
         try:
-            del farm["like"], farm["send_photo"], farm["action"]
-        except:
-            raise ValueError('Invalid ID')
+            del farm["like"]
+            del farm["send_photo"]
+            del farm["action"]
+        except Exception:
+            raise ValueError("Invalid ID")
         for _ in range(amount):
             ses.post(ses, url, farm)
+
     def getmsg(self, ses):
-        return get(ses, [],'messages',1)
+        return get(ses, [], "messages", 1)
+
     def delete_msg(self, ses, link):
-        forms = form(ses.get(link).content,'action_redirect')
+        forms = Parsing(ses.get(link).content).find_url("action_redirect")
         action = forms["action"]
-        fbjoe = dict(fb_dtsg=forms["fb_dtsg"],jazoest=forms["jazoest"],delete=forms["delete"])
-        ses.get(Urlfind(Parser(ses.post(action, fbjoe).content),'?mm_action'))
+        fbjoe = dict(
+            fb_dtsg=forms["fb_dtsg"],
+            jazoest=forms["jazoest"],
+            delete=forms["delete"]
+        )
+        ses.get(Parsing(ses.post(action, fbjoe).content).find_url("?mm_action"))
+
     def getusersonline(self, ses):
         rv = []
-        data = Parser(ses.get('buddylist.php').content).find_all('tr')
+        data = Parsing(ses.get("buddylist.php").content).to_bs4.find_all("tr")
         for x in data:
             try:
-                if "jY8pG8.png" in x.find('img')["src"]:
-                    url = x.find('a')["href"]
-                    if 'php' in str(url):
+                if "jY8pG8.png" in x.find("img")["src"]:
+                    url = x.find("a")["href"]
+                    if "php" in str(url):
                         continue
                     else:
-                        rv.append(url.split('id=')[1].split('&')[0])
-            except:
+                        rv.append(url.split("id=")[1].split("&")[0])
+            except Exception:
                 continue
         return rv
+
+
 def get(ses, arg, url, page):
-    raw = Parser(ses.get(url).content)
-    for msg in Urlfind(raw, '?tid=', True):
+    raw = Parsing(ses.get(url).content)
+    for msg in raw.find_url("?tid=", text=True):
         arg.append(msg)
-    if 'see_older_threads' in str(raw):
-        nextpage = Urlfind(raw, '?pageNum=' + str(page))
+    if "see_older_threads" in str(raw.to_bs4):
+        nextpage = raw.find_url("?pageNum=" + str(page))
         page += 1
         get(ses, arg, nextpage, page)
     return arg
